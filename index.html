@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>点击计数挑战</title>
+    <style>
+        /* 基础样式 */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            min-height: 100vh;
+            padding-top: 60px;
+        }
+
+        .menu {
+            background-color: #333;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 15px 0;
+            z-index: 100;
+        }
+        .menu ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+        }
+        .menu a {
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+        .menu a:hover {
+            color: #4CAF50;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        /* 标题文字特效 */
+        .title-effect {
+            display: inline-block;
+            background: linear-gradient(90deg, #4CAF50, #1677ff, #ff5252);
+            background-size: 200% auto;
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            animation: gradientShift 3s ease infinite;
+        }
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 20px 0;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+
+        /* 计数文字特效 */
+        .count-display {
+            font-size: 28px;
+            margin: 20px 0;
+            color: #555;
+        }
+        .count-number {
+            font-weight: bold;
+            position: relative;
+            display: inline-block;
+        }
+        .count-animate {
+            animation: countPulse 0.5s ease-out;
+        }
+        @keyframes countPulse {
+            0% {
+                transform: scale(1);
+                color: #555;
+            }
+            50% {
+                transform: scale(1.5);
+                color: #4CAF50;
+                text-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+            }
+            100% {
+                transform: scale(1);
+                color: #555;
+            }
+        }
+
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0,0,0,0.8);
+            z-index: 1000;
+            flex-direction: column;
+        }
+        .celebration-text {
+            font-size: 48px;
+            color: #ffeb3b;
+            font-weight: bold;
+            text-shadow: 0 0 10px #ffeb3b, 0 0 20px #ffeb3b;
+            margin-bottom: 30px;
+        }
+        .firework {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: explode 1s ease-out forwards;
+        }
+        @keyframes explode {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(5); opacity: 0; }
+        }
+        .close-btn {
+            padding: 10px 20px;
+            background-color: #ff5252;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+            position: relative;
+            transform-origin: center;
+        }
+
+        /* 漂移旋转动画 */
+        @keyframes driftRotate {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            100% {
+                transform: translate(150px, -50px) rotate(360deg);
+            }
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0,0,0,0.7);
+            z-index: 1000;
+            overflow: hidden;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            font-size: 20px;
+            text-align: center;
+            min-width: 300px;
+            position: relative;
+        }
+
+        .tools-list {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+        .tools-list li {
+            margin: 10px 0;
+        }
+        .tools-list button {
+            padding: 8px 16px;
+            font-size: 16px;
+            background-color: #1677ff;
+        }
+
+        /* 新增200次点击彩蛋的提示样式及特效 */
+        .easter-egg-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .easter-egg-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            width: 300px;
+            font-size: 20px;
+            animation: shake 0.5s ease-in-out;
+        }
+        .easter-egg-content p {
+            font-weight: bold;
+            color: #ff0066;
+            background: linear-gradient(45deg, #ff0066, #4CAF50, #1677ff);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: textGradient 3s ease infinite, textBlink 1s infinite;
+        }
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px) rotate(-2deg); }
+            50% { transform: translateX(5px) rotate(2deg); }
+            75% { transform: translateX(-5px) rotate(-2deg); }
+            100% { transform: translateX(0) rotate(0); }
+        }
+        @keyframes textGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        @keyframes textBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航菜单 -->
+    <nav class="menu">
+        <ul>
+            <li><a onclick="MenuModule.goToHome()">首页</a></li>
+            <li><a onclick="AboutModule.showAbout()">关于</a></li>
+            <li><a onclick="ToolsModule.showTools()">小工具</a></li>
+            <li><a onclick="MenuModule.showSettings()">设置</a></li>
+        </ul>
+    </nav>
+
+    <!-- 主内容区 -->
+    <div class="container" id="home">
+        <h1><span class="title-effect">点击计数挑战</span></h1>
+        <button onclick="CountModule.countClicks()">点击我</button>
+        <div class="count-display">当前点击次数: <span id="clickCount" class="count-number">0</span></div>
+    </div>
+
+    <!-- 特效弹窗 -->
+    <div class="celebration" id="celebration">
+        <div class="celebration-text">你™真厉害！</div>
+        <button class="close-btn" onclick="CelebrationModule.closeCelebration()">关闭</button>
+    </div>
+
+    <!-- 关于弹窗 -->
+    <div class="modal" id="aboutModal">
+        <div class="modal-content">
+            关于一个傻不拉几的作者<br><br>
+            <button class="close-btn" id="aboutCloseBtn" onclick="AboutModule.handleAboutClose()">关闭</button>
+        </div>
+    </div>
+
+    <!-- 小工具弹窗 -->
+    <div class="modal" id="toolsModal">
+        <div class="modal-content">
+            <h3>小工具列表</h3>
+            <ul class="tools-list">
+                <li><button onclick="ToolsModule.showCalculator()">计算器</button></li>
+                <li><button onclick="ToolsModule.showTimer()">计时器</button></li>
+                <li><button onclick="ToolsModule.showRandomGenerator()">随机数生成器</button></li>
+            </ul>
+            <button class="close-btn" onclick="ToolsModule.closeTools()">关闭</button>
+        </div>
+    </div>
+
+    <!-- 新增200次点击彩蛋的弹窗 -->
+    <div class="easter-egg-modal" id="easterEggModal">
+        <div class="easter-egg-content">
+            <p>恭喜你达到了200下，触发了彩蛋！</p>
+            <button class="close-btn" onclick="closeEasterEggModal()">关闭彩蛋</button>
+        </div>
+    </div>
+
+    <script>
+        // 计数模块
+        const CountModule = (function() {
+            let clickCount = 0;
+            const countElement = document.getElementById('clickCount');
+            let hasCelebrated = false;
+            const easterEggModal = document.getElementById('easterEggModal'); // 彩蛋弹窗元素
+
+            function countClicks() {
+                clickCount++;
+                countElement.textContent = clickCount;
+                countElement.classList.add('count-animate');
+                
+                setTimeout(() => {
+                    countElement.classList.remove('count-animate');
+                }, 500);
+
+                if (clickCount === 100 && !hasCelebrated) {
+                    CelebrationModule.triggerCelebration();
+                    hasCelebrated = true;
+                }
+
+                // 新增200次点击彩蛋逻辑
+                if (clickCount === 200) {
+                    easterEggModal.style.display = 'flex';
+                }
+            }
+
+            return {
+                countClicks: countClicks
+            };
+        })();
+
+        // 关闭彩蛋弹窗的函数
+        function closeEasterEggModal() {
+            const easterEggModal = document.getElementById('easterEggModal');
+            easterEggModal.style.display = 'none';
+        }
+
+        // 庆祝特效模块
+        const CelebrationModule = (function() {
+            const celebration = document.getElementById('celebration');
+
+            function triggerCelebration() {
+                celebration.style.display = 'flex';
+                createFireworks();
+            }
+
+            function createFireworks() {
+                const colors = ['#ff4081', '#00e5ff', '#76ff03', '#ffeb3b', '#ba68c8'];
+                const celebrationArea = document.getElementById('celebration');
+                
+                for (let i = 0; i < 20; i++) {
+                    const firework = document.createElement('div');
+                    firework.className = 'firework';
+                    firework.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    firework.style.left = `${Math.random() * 100}%`;
+                    firework.style.top = `${Math.random() * 100}%`;
+                    celebrationArea.appendChild(firework);
+
+                    setTimeout(() => firework.remove(), 1000);
+                }
+            }
+
+            function closeCelebration() {
+                celebration.style.display = 'none';
+                document.querySelectorAll('.firework').forEach(fw => fw.remove());
+            }
+
+            return {
+                triggerCelebration: triggerCelebration,
+                closeCelebration: closeCelebration
+            };
+        })();
+
+        // 关于模块
+        const AboutModule = (function() {
+            const aboutModal = document.getElementById('aboutModal');
+            const aboutCloseBtn = document.getElementById('aboutCloseBtn');
+            let hasDrifted = false;
+
+            function showAbout() {
+                aboutModal.style.display = 'flex';
+                hasDrifted = false;
+                aboutCloseBtn.style.animation = 'none';
+                aboutCloseBtn.style.transform = 'translate(0, 0) rotate(0deg)';
+            }
+
+            function handleAboutClose() {
+                if (!hasDrifted) {
+                    hasDrifted = true;
+                    aboutCloseBtn.style.animation = 'driftRotate 1s ease-out forwards';
+                } else {
+                    closeAbout();
+                }
+            }
+
+            function closeAbout() {
+                aboutModal.style.display = 'none';
+                aboutCloseBtn.style.animation = 'none';
+                aboutCloseBtn.style.transform = 'translate(0, 0) rotate(0deg)';
+            }
+
+            return {
+                showAbout: showAbout,
+                handleAboutClose: handleAboutClose,
+                closeAbout: closeAbout
+            };
+        })();
+
+        // 工具模块
+        const ToolsModule = (function() {
+            const toolsModal = document.getElementById('toolsModal');
+
+            function showTools() {
+                toolsModal.style.display = 'flex';
+            }
+
+            function closeTools() {
+                toolsModal.style.display = 'none';
+            }
+
+            function showCalculator() {
+                alert('计算器功能开发中~');
+            }
+
+            function showTimer() {
+                alert('计时器功能开发中~');
+            }
+
+            function showRandomGenerator() {
+                alert('随机数生成器开发中~');
+            }
+
+            return {
+                showTools: showTools,
+                closeTools: closeTools,
+                showCalculator: showCalculator,
+                showTimer: showTimer,
+                showRandomGenerator: showRandomGenerator
+            };
+        })();
+
+        // 菜单模块
+        const MenuModule = (function() {
+            function goToHome() {
+                // 首页逻辑
+            }
+
+            function showSettings() {
+                alert('设置功能暂未开发');
+            }
+
+            return {
+                goToHome: goToHome,
+                showSettings: showSettings
+            };
+        })();
+    </script>
+</body>
+</html>
