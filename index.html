@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自制网站的网页awa</title>
+    <style>
+        /* 基础样式重置与全局设置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a1a 0%, #333333 100%);
+            background-attachment: fixed;
+            padding-top: 70px;
+            overflow-x: hidden;
+            padding-bottom: 50px;
+            transition: background 0.5s ease;
+        }
+        /* 浅色主题 */
+        body.light-theme {
+            background: linear-gradient(135deg, #f0f0f0 0%, #cccccc 100%);
+        }
+        /* 导航菜单 */
+        .menu {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 15px 0;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        .menu ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+        .menu a {
+            color: #f0f0f0;
+            text-decoration: none;
+            font-size: 16px;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+        }
+        body.light-theme .menu a {
+            color: #333;
+        }
+        .menu a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #ffffff;
+            transition: width 0.3s ease;
+        }
+        body.light-theme .menu a::after {
+            background: #333;
+        }
+        .menu a:hover {
+            color: #ffffff;
+        }
+        body.light-theme .menu a:hover {
+            color: #000;
+        }
+        .menu a:hover::after {
+            width: 100%;
+        }
+        /* 主容器 */
+        .container {
+            max-width: 500px;
+            margin: 40px auto;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            transition: transform 0.5s ease, box-shadow 0.5s ease;
+            position: relative;
+        }
+        body.light-theme .container {
+            background: rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        }
+        /* 标题样式 */
+        h1, h2, h3 {
+            color: #ffffff;
+            margin-bottom: 30px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        body.light-theme h1, 
+        body.light-theme h2, 
+        body.light-theme h3 {
+            color: #333;
+        }
+        .title-effect {
+            background: linear-gradient(90deg, #ffffff, #cccccc, #ffffff);
+            background-size: 200% auto;
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            animation: gradientShift 4s ease infinite;
+            display: inline-block;
+        }
+        body.light-theme .title-effect {
+            background: linear-gradient(90deg, #333, #666, #333);
+        }
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        /* 按钮样式 */
+        button {
+            padding: 16px 32px;
+            font-size: 20px;
+            font-weight: 600;
+            background: #ffffff;
+            color: #000000;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            margin: 20px 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        body.light-theme button {
+            background: #333;
+            color: #fff;
+        }
+        button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+        body.light-theme button::after {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        button:active::after {
+            width: 300px;
+            height: 300px;
+            opacity: 0;
+        }
+        button:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        button:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        /* 计数显示 */
+        .count-display {
+            font-size: 26px;
+            color: #f0f0f0;
+            margin: 20px 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        body.light-theme .count-display {
+            color: #333;
+            text-shadow: none;
+        }
+        .count-number {
+            font-weight: bold;
+            font-size: 32px;
+            position: relative;
+            display: inline-block;
+            margin: 0 8px;
+        }
+        .count-animate {
+            animation: countPulse 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        @keyframes countPulse {
+            0% { transform: scale(1); color: #f0f0f0; }
+            50% { transform: scale(1.6); color: #ffffff; text-shadow: 0 0 15px rgba(255, 255, 255, 0.6); }
+            100% { transform: scale(1); color: #f0f0f0; }
+        }
+        body.light-theme .count-animate {
+            0% { transform: scale(1); color: #333; }
+            50% { transform: scale(1.6); color: #000; }
+            100% { transform: scale(1); color: #333; }
+        }
+        /* 弹窗基础样式 */
+        .modal, .celebration, .easter-egg-modal, .ranking-modal, .game-over-modal, .settings-modal, .monitor-modal, .sponsor-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        body.light-theme .modal, 
+        body.light-theme .celebration, 
+        body.light-theme .easter-egg-modal, 
+        body.light-theme .ranking-modal, 
+        body.light-theme .game-over-modal, 
+        body.light-theme .settings-modal,
+        body.light-theme .monitor-modal,
+        body.light-theme .sponsor-modal {
+            background-color: rgba(255, 255, 255, 0.7);
+        }
+        .modal.active, .celebration.active, .easter-egg-modal.active, .ranking-modal.active, .game-over-modal.active, .settings-modal.active, .monitor-modal.active, .sponsor-modal.active {
+            display: flex;
+            opacity: 1;
+        }
+        .modal-content, .celebration-text, .easter-egg-content, .ranking-content, .game-over-content, .settings-content, .monitor-content, .sponsor-content {
+            transform: scale(0.8);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .modal.active .modal-content, 
+        .celebration.active .celebration-text, 
+        .easter-egg-modal.active .easter-egg-content,
+        .ranking-modal.active .ranking-content,
+        .game-over-modal.active .game-over-content,
+        .settings-modal.active .settings-content,
+        .monitor-modal.active .monitor-content,
+        .sponsor-modal.active .sponsor-content {
+            transform: scale(1);
+        }
+        /* 庆祝弹窗 */
+        .celebration {
+            flex-direction: column;
+        }
+        .celebration-text {
+            font-size: 42px;
+            color: #ffffff;
+            font-weight: bold;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.5), 0 0 30px rgba(255, 255, 255, 0.3);
+            margin-bottom: 30px;
+            animation: float 3s ease-in-out infinite;
+        }
+        body.light-theme .celebration-text {
+            color: #333;
+            text-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        .firework {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ffffff;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+            animation: explode 1.2s ease-out forwards;
+        }
+        body.light-theme .firework {
+            background: #333;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+        }
+        @keyframes explode {
+            0% { transform: scale(0); opacity: 1; }
+            70% { opacity: 0.8; }
+            100% { transform: scale(6); opacity: 0; }
+        }
+        /* 关于弹窗 */
+        .modal-content {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 12px;
+            font-size: 18px;
+            text-align: center;
+            min-width: 300px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            color: #333333;
+        }
+        /* 班长弹窗 */
+        .monitor-modal {
+            z-index: 2100; /* 层级高于关于弹窗，避免被遮挡 */
+        }
+        .monitor-content {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 35px;
+            border-radius: 12px;
+            text-align: center;
+            width: 320px;
+            font-size: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            color: #333333;
+        }
+        .monitor-click-count {
+            margin: 15px 0;
+            font-size: 18px;
+            color: #666;
+        }
+        /* 彩蛋弹窗 */
+        .easter-egg-content {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 35px;
+            border-radius: 12px;
+            text-align: center;
+            width: 320px;
+            font-size: 22px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            color: #333333;
+        }
+        .easter-egg-content p {
+            font-weight: bold;
+            background: linear-gradient(45deg, #000000, #666666, #000000);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: textGradient 3s ease infinite, textBlink 1.2s infinite;
+            margin-bottom: 20px;
+        }
+        @keyframes textGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        @keyframes textBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        /* 排行榜弹窗 */
+        .ranking-content {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            width: 85%;
+            max-width: 500px;
+            font-size: 18px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            color: #333333;
+        }
+        .ranking-tabs {
+            display: flex;
+            margin-bottom: 15px;
+            gap: 10px;
+        }
+        .ranking-tab {
+            padding: 5px 15px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 0;
+        }
+        .ranking-tab.active {
+            background: #333;
+            color: white;
+        }
+        .ranking-list {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+            max-height: 300px;
+            overflow-y: auto;
+            border-radius: 8px;
+            background: rgba(245, 245, 245, 0.8);
+        }
+        .ranking-item {
+            padding: 12px 15px;
+            margin: 0;
+            border-bottom: 1px solid rgba(200, 200, 200, 0.3);
+            display: flex;
+            justify-content: space-between;
+            transition: background 0.2s ease;
+        }
+        .ranking-item:hover {
+            background: rgba(255, 255, 255, 0.6);
+        }
+        .ranking-item.top {
+            background: #f0f0f0;
+            font-weight: bold;
+        }
+        .ranking-item.top:nth-child(1) {
+            border-left: 4px solid #cccccc;
+        }
+        .ranking-item.top:nth-child(2) {
+            border-left: 4px solid #999999;
+        }
+        .ranking-item.top:nth-child(3) {
+            border-left: 4px solid #666666;
+        }
+        /* 关闭按钮 */
+        .close-btn {
+            padding: 10px 20px;
+            background: #000000;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+        body.light-theme .close-btn {
+            background: #f0f0f0;
+            color: #333;
+        }
+        .close-btn:hover {
+            background: #333333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        body.light-theme .close-btn:hover {
+            background: #ccc;
+        }
+        /* 漂移旋转动画（核心修改：缩小漂移距离，确保按钮在弹窗内） */
+        @keyframes driftRotate {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(50px, -20px) rotate(360deg); } /* 原150px→50px，原-50px→-20px */
+        }
+        /* 小游戏区域 */
+        .game-container {
+            max-width: 500px;
+            margin: 20px auto 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+        body.light-theme .game-container {
+            background: rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        .game-title {
+            color: #ffffff;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 22px;
+        }
+        body.light-theme .game-title {
+            color: #333;
+        }
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            color: #f0f0f0;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        body.light-theme .game-info {
+            color: #333;
+        }
+        .game-area {
+            width: 100%;
+            height: 200px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        body.light-theme .game-area {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        .game-square {
+            width: 40px;
+            height: 40px;
+            background: #ffffff;
+            position: absolute;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+        body.light-theme .game-square {
+            background: #333;
+        }
+        .game-square:hover {
+            transform: scale(1.1);
+        }
+        .game-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        .difficulty-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .game-btn, .difficulty-btn {
+            padding: 8px 16px;
+            background: #ffffff;
+            color: #000000;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+        body.light-theme .game-btn, 
+        body.light-theme .difficulty-btn {
+            background: #333;
+            color: #fff;
+        }
+        .game-btn:hover, .difficulty-btn:hover {
+            background: #f0f0f0;
+            transform: translateY(-2px);
+        }
+        body.light-theme .game-btn:hover, 
+        body.light-theme .difficulty-btn:hover {
+            background: #555;
+        }
+        .difficulty-btn.active {
+            background: #333;
+            color: white;
+        }
+        body.light-theme .difficulty-btn.active {
+            background: #ccc;
+            color: #333;
+        }
+        /* 游戏结束弹窗 */
+        .game-over-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            min-width: 280px;
+        }
+        .game-over-score {
+            font-size: 24px;
+            margin: 15px 0;
+            color: #333;
+        }
+        /* 设置面板 */
+        .settings-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 85%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .setting-label {
+            font-size: 18px;
+            color: #333;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .toggle-slider {
+            background-color: #333;
+        }
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        .settings-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .settings-btn {
+            padding: 8px 16px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        /* 赞助名单弹窗 */
+        .sponsor-content {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 35px;
+            border-radius: 12px;
+            text-align: center;
+            width: 320px;
+            font-size: 22px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            color: #333333;
+        }
+        /* 反馈提示 */
+        .feedback {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            padding: 10px 20px;
+            border-radius: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 1500;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        body.light-theme .feedback {
+            background: rgba(0,0,0,0.8);
+            color: #fff;
+        }
+        .feedback.show {
+            opacity: 1;
+        }
+        /* 响应式调整 */
+        @media (max-width: 480px) {
+            .menu ul {
+                gap: 15px;
+            }
+            .container, .game-container {
+                margin: 20px 15px;
+                padding: 20px;
+            }
+            button {
+                padding: 14px 24px;
+                font-size: 18px;
+            }
+            .celebration-text {
+                font-size: 32px;
+            }
+            .difficulty-controls {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航菜单 -->
+    <nav class="menu">
+        <ul>
+            <li><a onclick="MenuModule.goToHome()">首页</a></li>
+            <li><a onclick="AboutModule.showAbout()">关于</a></li>
+            <li><a onclick="RankingModule.showRanking()">排行榜</a></li>
+            <li><a onclick="SettingsModule.showSettings()">设置</a></li>
+        </ul>
+    </nav>
+    <!-- 主内容区 -->
+    <div class="container" id="home">
+        <h1><span class="title-effect">点击计数挑战</span></h1>
+        <button onclick="CountModule.countClicks()">点击我</button>
+        <div class="count-display">当前点击次数: <span id="clickCount" class="count-number">0</span></div>
+        <div class="count-display">每秒点击: <span id="cpsDisplay" class="count-number">0</span></div>
+    </div>
+    <!-- 小游戏区域 -->
+    <div class="game-container">
+        <h2 class="game-title">点击方块的游戏</h2>
+        
+        <div class="difficulty-controls">
+            <button class="difficulty-btn" onclick="GameDifficultyModule.setDifficulty('easy')">简单</button>
+            <button class="difficulty-btn active" onclick="GameDifficultyModule.setDifficulty('medium')">中等</button>
+            <button class="difficulty-btn" onclick="GameDifficultyModule.setDifficulty('hard')">噩梦</button>
+        </div>
+        
+        <div class="game-info">
+            <div>分数: <span id="gameScore">0</span></div>
+            <div>时间: <span id="gameTime">30s</span></div>
+        </div>
+        <div class="game-area" id="gameArea"></div>
+        <div class="game-controls">
+            <button class="game-btn" onclick="GameModule.startGame()">开始游戏awa</button>
+            <button class="game-btn" onclick="GameModule.stopGame()">结束游戏</button>
+        </div>
+    </div>
+    <!-- 反馈提示 -->
+    <div class="feedback" id="feedback"></div>
+    <!-- 弹窗区域 -->
+    <div class="celebration" id="celebration">
+        <div class="celebration-text">你™真厉害！</div>
+        <button class="close-btn" onclick="CelebrationModule.closeCelebration()">关闭</button>
+    </div>
+    <!-- 关于弹窗 -->
+    <div class="modal" id="aboutModal">
+        <div class="modal-content">
+            关于一个傻不拉几的作者（怀德7班的）<br><br>
+            <button class="close-btn" style="margin: 10px 0;" onclick="MonitorModule.showMonitorModal()">关于作者的班长</button>
+            <button class="close-btn" id="aboutCloseBtn" onclick="AboutModule.handleAboutClose()">关闭</button>
+        </div>
+    </div>
+    <!-- 班长弹窗 -->
+    <div class="monitor-modal" id="monitorModal">
+        <div class="monitor-content">
+            叫班长～<br>
+            <div class="monitor-click-count">已点击: <span id="monitorClickCount">0</span>/10</div>
+            <button class="close-btn" onclick="MonitorModule.countMonitorClicks()">班长大人～</button>
+        </div>
+    </div>
+    <!-- 彩蛋弹窗 -->
+    <div class="easter-egg-modal" id="easterEggModal">
+        <div class="easter-egg-content">
+            <p>恭喜你点到了200下，触发了彩蛋！</p>
+            <button class="close-btn" onclick="closeEasterEggModal()">关闭弹窗</button>
+        </div>
+    </div>
+    <!-- 排行榜弹窗 -->
+    <div class="ranking-modal" id="rankingModal">
+        <div class="ranking-content">
+            <h3>排行榜</h3>
+            <div class="ranking-tabs">
+                <button class="ranking-tab active" onclick="RankingModule.switchTab('normal')">自由点击</button>
+                <button class="ranking-tab" onclick="RankingModule.switchTab('game')">方块游戏</button>
+            </div>
+            <ul class="ranking-list" id="rankingList">
+                <!-- 动态生成内容 -->
+            </ul>
+            <button class="close-btn" onclick="RankingModule.closeRanking()">关闭</button>
+        </div>
+    </div>
+    <!-- 游戏结束弹窗 -->
+    <div class="game-over-modal" id="gameOverModal">
+        <div class="game-over-content">
+            <h3>游戏结束!</h3>
+            <div class="game-over-score">最终得分: <span id="finalScore">0</span></div>
+            <div class="game-over-score">难度: <span id="finalDifficulty">中等</span></div>
+            <button class="close-btn" onclick="document.getElementById('gameOverModal').classList.remove('active')">关闭</button>
+        </div>
+    </div>
+    <!-- 设置面板（新增赞助名单选项） -->
+    <div class="settings-modal" id="settingsModal">
+        <div class="settings-content">
+            <h3>设置</h3>
+            <!-- 原有设置项 -->
+            <div class="setting-item">
+                <span class="setting-label">黑筛/浅筛主题</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="themeToggle">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <div class="setting-item">
+                <span class="setting-label">显示反馈提示</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="feedbackToggle" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <!-- 新增：赞助名单选项 -->
+            <div class="setting-item">
+                <span class="setting-label">赞助名单</span>
+                <button class="settings-btn" onclick="SettingsModule.showSponsorList()">查看</button>
+            </div>
+            <!-- 原有操作按钮 -->
+            <div class="settings-actions">
+                <button class="settings-btn" onclick="SettingsModule.resetData()">重置所有数据</button>
+                <button class="settings-btn" onclick="SettingsModule.closeSettings()">关闭</button>
+            </div>
+        </div>
+    </div>
+    <!-- 新增：赞助名单弹窗 -->
+    <div class="sponsor-modal" id="sponsorModal">
+        <div class="sponsor-content">
+            <h3>赞助名单</h3>
+            <p>1. 王泽耀</p>
+            <p>男班长没78</p>
+            <button class="close-btn" style="margin-top: 20px;" onclick="SettingsModule.closeSponsorList()">关闭</button>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('button, .menu a').forEach(el => {
+                el.style.pointerEvents = 'auto';
+            });
+            FeedbackModule.init();
+            SettingsModule.init();
+            RankingModule.init();
+        });
+        // 反馈提示模块
+        const FeedbackModule = (function() {
+            const feedbackEl = document.getElementById('feedback');
+            let enabled = true;
+            function init() {
+                enabled = localStorage.getItem('feedbackEnabled') !== 'false';
+                document.getElementById('feedbackToggle').checked = enabled;
+            }
+            function show(message, duration = 2000) {
+                if (!enabled) return;
+                feedbackEl.textContent = message;
+                feedbackEl.classList.add('show');
+                setTimeout(() => feedbackEl.classList.remove('show'), duration);
+            }
+            function toggle(enable) {
+                enabled = enable;
+                localStorage.setItem('feedbackEnabled', enable);
+            }
+            return { show, toggle, init };
+        })();
+        // 计数模块
+        const CountModule = (function() {
+            let clickCount = 0;
+            const countElement = document.getElementById('clickCount');
+            const cpsElement = document.getElementById('cpsDisplay');
+            let hasCelebrated = false;
+            const easterEggModal = document.getElementById('easterEggModal');
+            let clickTimes = [];
+            function countClicks() {
+                clickCount++;
+                countElement.textContent = clickCount;
+                countElement.classList.add('count-animate');
+                
+                const now = Date.now();
+                clickTimes.push(now);
+                clickTimes = clickTimes.filter(time => now - time < 1000);
+                const cps = Math.round(clickTimes.length);
+                cpsElement.textContent = cps;
+                
+                setTimeout(() => {
+                    countElement.classList.remove('count-animate');
+                }, 600);
+                if (clickCount % 50 === 0) {
+                    FeedbackModule.show(`已点击${clickCount}次！继续加油！`);
+                }
+                if (clickCount === 100 && !hasCelebrated) {
+                    CelebrationModule.triggerCelebration();
+                    hasCelebrated = true;
+                }
+                if (clickCount === 200) {
+                    easterEggModal.classList.add('active');
+                }
+                RankingModule.saveToRanking('normal', clickCount);
+            }
+            function resetCount() {
+                clickCount = 0;
+                countElement.textContent = '0';
+                cpsElement.textContent = '0';
+                clickTimes = [];
+            }
+            function getCount() {
+                return clickCount;
+            }
+            return { countClicks, resetCount, getCount };
+        })();
+        // 关闭彩蛋弹窗
+        function closeEasterEggModal() {
+            const easterEggModal = document.getElementById('easterEggModal');
+            easterEggModal.classList.remove('active');
+        }
+        // 庆祝特效模块
+        const CelebrationModule = (function() {
+            const celebration = document.getElementById('celebration');
+            function triggerCelebration() {
+                celebration.classList.add('active');
+                createFireworks();
+                FeedbackModule.show('太棒了！成功点了100下！');
+            }
+            function createFireworks() {
+                const celebrationArea = document.getElementById('celebration');
+                document.querySelectorAll('.firework').forEach(fw => fw.remove());
+                
+                for (let i = 0; i < 25; i++) {
+                    const firework = document.createElement('div');
+                    firework.className = 'firework';
+                    firework.style.left = `${Math.random() * 100}%`;
+                    firework.style.top = `${Math.random() * 100}%`;
+                    firework.style.animationDelay = `${Math.random() * 1.5}s`;
+                    celebrationArea.appendChild(firework);
+                    setTimeout(() => firework.remove(), 2000);
+                }
+            }
+            function closeCelebration() {
+                celebration.classList.remove('active');
+                document.querySelectorAll('.firework').forEach(fw => fw.remove());
+            }
+            return { triggerCelebration, closeCelebration };
+        })();
+        // 关于模块
+        const AboutModule = (function() {
+            const aboutModal = document.getElementById('aboutModal');
+            const aboutCloseBtn = document.getElementById('aboutCloseBtn');
+            let hasDrifted = false;
+            function showAbout() {
+                aboutModal.classList.add('active');
+                hasDrifted = false;
+                aboutCloseBtn.style.animation = 'none';
+                aboutCloseBtn.style.transform = 'translate(0, 0) rotate(0deg)';
+            }
+            function handleAboutClose() {
+                if (!hasDrifted) {
+                    hasDrifted = true;
+                    aboutCloseBtn.style.animation = 'driftRotate 1s ease-out forwards';
+                    FeedbackModule.show('按钮飞走了！');
+                } else {
+                    closeAbout();
+                }
+            }
+            function closeAbout() {
+                aboutModal.classList.remove('active');
+                aboutCloseBtn.style.animation = 'none';
+                aboutCloseBtn.style.transform = 'translate(0, 0) rotate(0deg)';
+            }
+            return { showAbout, handleAboutClose, closeAbout };
+        })();
+        // 班长弹窗模块
+        const MonitorModule = (function() {
+            const monitorModal = document.getElementById('monitorModal');
+            const monitorClickCountEl = document.getElementById('monitorClickCount');
+            let clickCount = 0;
+            function showMonitorModal() {
+                clickCount = 0;
+                monitorClickCountEl.textContent = clickCount;
+                monitorModal.classList.add('active');
+            }
+            function countMonitorClicks() {
+                clickCount++;
+                monitorClickCountEl.textContent = clickCount;
+                
+                if (clickCount >= 10) {
+                    monitorModal.classList.remove('active');
+                    FeedbackModule.show('成功退出班长页面～');
+                }
+            }
+            return { showMonitorModal, countMonitorClicks };
+        })();
+        // 排行榜模块
+        const RankingModule = (function() {
+            const rankingModal = document.getElementById('rankingModal');
+            const rankingList = document.getElementById('rankingList');
+            const rankingTabs = document.querySelectorAll('.ranking-tab');
+            let userIP = 'local';
+            let currentTab = 'normal';
+            function init() {
+                try {
+                    fetch('https://api.ipify.org?format=json')
+                        .then(res => res.json())
+                        .then(data => {
+                            userIP = data.ip || 'local';
+                        })
+                        .catch(() => {});
+                } catch (e) {}
+            }
+            function getRankingData(type) {
+                const data = localStorage.getItem(`ranking_${type}`);
+                return data ? JSON.parse(data) : [];
+            }
+            function saveToRanking(type, score, extra = {}) {
+                const rankingData = getRankingData(type);
+                const userIndex = rankingData.findIndex(item => item.ip === userIP);
+                
+                const record = {
+                    ip: userIP,
+                    score: score,
+                    time: new Date().toLocaleString(),
+                    ...extra
+                };
+                
+                if (userIndex > -1) {
+                    if (score > rankingData[userIndex].score) {
+                        rankingData[userIndex] = record;
+                    }
+                } else {
+                    rankingData.push(record);
+                }
+                const sortedData = rankingData
+                    .sort((a, b) => b.score - a.score)
+                    .slice(0, 20);
+                localStorage.setItem(`ranking_${type}`, JSON.stringify(sortedData));
+            }
+            function showRanking() {
+                currentTab = 'normal';
+                renderRanking('normal');
+                rankingModal.classList.add('active');
+                rankingTabs[0].classList.add('active');
+                rankingTabs[1].classList.remove('active');
+            }
+            function switchTab(type) {
+                currentTab = type;
+                renderRanking(type);
+                rankingTabs.forEach(tab => tab.classList.remove('active'));
+                rankingTabs.forEach((tab, index) => {
+                    if ((type === 'normal' && index === 0) || 
+                        (type === 'game' && index === 1)) {
+                        tab.classList.add('active');
+                    }
+                });
+            }
+            function renderRanking(type) {
+                const rankingData = getRankingData(type);
+                rankingList.innerHTML = '';
+                if (rankingData.length === 0) {
+                    rankingList.innerHTML = '<li class="ranking-item">没东西！</li>';
+                    return;
+                }
+                rankingData.forEach((item, index) => {
+                    const li = document.createElement('li');
+                    li.className = `ranking-item ${index < 3 ? 'top' : ''}`;
+                    const maskedIP = item.ip.length > 8 ? item.ip.slice(0, 8) + '***' : item.ip;
+                    
+                    let extraInfo = '';
+                    if (type === 'game') {
+                        extraInfo = `| ${item.difficulty}`;
+                    }
+                    li.innerHTML = `
+                        <span>${index + 1}. IP: ${maskedIP}</span>
+                        <span>分数: ${item.score} ${extraInfo} | ${item.time}</span>
+                    `;
+                    rankingList.appendChild(li);
+                });
+            }
+            function closeRanking() {
+                rankingModal.classList.remove('active');
+            }
+            function clearAllRanking() {
+                localStorage.removeItem('ranking_normal');
+                localStorage.removeItem('ranking_game');
+                renderRanking(currentTab);
+            }
+            return { 
+                init,
+                showRanking, 
+                closeRanking, 
+                saveToRanking, 
+                switchTab,
+                clearAllRanking
+            };
+        })();
+        // 菜单模块
+        const MenuModule = (function() {
+            function goToHome() {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                FeedbackModule.show('已到站-主页');
+            }
+            function showSettings() {
+                SettingsModule.showSettings();
+            }
+            return { goToHome, showSettings };
+        })();
+        // 方块游戏难度模块
+        const GameDifficultyModule = (function() {
+            let currentDifficulty = 'medium';
+            const difficultyBtns = document.querySelectorAll('.difficulty-btn');
+            const finalDifficultyEl = document.getElementById('finalDifficulty');
+            function getSettings() {
+                switch(currentDifficulty) {
+                    case 'easy':
+                        return {
+                            squareSize: 50,
+                            spawnInterval: 1000,
+                            squareLife: 2000
+                        };
+                    case 'medium':
+                        return {
+                            squareSize: 40,
+                            spawnInterval: 800,
+                            squareLife: 1500
+                        };
+                    case 'hard':
+                        return {
+                            squareSize: 30,
+                            spawnInterval: 600,
+                            squareLife: 1000
+                        };
+                }
+            }
+            function setDifficulty(difficulty) {
+                currentDifficulty = difficulty;
+                difficultyBtns.forEach(btn => btn.classList.remove('active'));
+                difficultyBtns.forEach(btn => {
+                    if (btn.getAttribute('onclick').includes(difficulty)) {
+                        btn.classList.add('active');
+                    }
+                });
+                finalDifficultyEl.textContent = 
+                    difficulty === 'easy' ? '简单' : 
+                    difficulty === 'medium' ? '中等' : '噩梦';
+                FeedbackModule.show(`已切换到${finalDifficultyEl.textContent}难度`);
+            }
+            function getDifficultyName() {
+                return currentDifficulty === 'easy' ? '简单' : 
+                       currentDifficulty === 'medium' ? '中等' : '困难';
+            }
+            return {
+                getSettings,
+                setDifficulty,
+                getDifficultyName
+            };
+        })();
+        // 小游戏模块
+        const GameModule = (function() {
+            let isPlaying = false;
+            let score = 0;
+            let timeLeft = 30;
+            let gameInterval;
+            let spawnInterval;
+            const gameArea = document.getElementById('gameArea');
+            const scoreDisplay = document.getElementById('gameScore');
+            const timeDisplay = document.getElementById('gameTime');
+            const gameOverModal = document.getElementById('gameOverModal');
+            const finalScoreDisplay = document.getElementById('finalScore');
+            const finalDifficultyEl = document.getElementById('finalDifficulty');
+            function startGame() {
+                if (isPlaying) return;
+                
+                const difficulty = GameDifficultyModule.getSettings();
+                
+                isPlaying = true;
+                score = 0;
+                timeLeft = 30;
+                scoreDisplay.textContent = '0';
+                timeDisplay.textContent = '30s';
+                clearInterval(gameInterval);
+                clearInterval(spawnInterval);
+                gameArea.innerHTML = '';
+                gameInterval = setInterval(() => {
+                    timeLeft--;
+                    timeDisplay.textContent = `${timeLeft}s`;
+                    
+                    if (timeLeft <= 0) {
+                        endGame();
+                    }
+                }, 1000);
+                spawnInterval = setInterval(() => spawnSquare(difficulty), difficulty.spawnInterval);
+                FeedbackModule.show('游戏开始！点击方块得分！');
+            }
+            function spawnSquare(difficulty) {
+                if (!isPlaying) return;
+                
+                const square = document.createElement('div');
+                square.className = 'game-square';
+                square.style.width = `${difficulty.squareSize}px`;
+                square.style.height = `${difficulty.squareSize}px`;
+                
+                const maxX = gameArea.clientWidth - difficulty.squareSize;
+                const maxY = gameArea.clientHeight - difficulty.squareSize;
+                const x = Math.floor(Math.random() * maxX);
+                const y = Math.floor(Math.random() * maxY);
+                
+                square.style.left = `${x}px`;
+                square.style.top = `${y}px`;
+                
+                square.addEventListener('click', () => {
+                    score++;
+                    scoreDisplay.textContent = score;
+                    if (score % 10 === 0) {
+                        FeedbackModule.show(`已得${score}分！继续点吧！`);
+                    }
+                    square.style.opacity = '0';
+                    square.style.transform = 'scale(0)';
+                    setTimeout(() => square.remove(), 200);
+                });
+                
+                gameArea.appendChild(square);
+                
+                setTimeout(() => {
+                    if (gameArea.contains(square)) {
+                        square.style.opacity = '0';
+                        square.style.transform = 'scale(0)';
+                        setTimeout(() => square.remove(), 200);
+                    }
+                }, difficulty.squareLife);
+            }
+            function endGame() {
+                isPlaying = false;
+                clearInterval(gameInterval);
+                clearInterval(spawnInterval);
+                gameArea.innerHTML = '';
+                
+                const difficulty = GameDifficultyModule.getDifficultyName();
+                RankingModule.saveToRanking('game', score, { difficulty });
+                
+                finalScoreDisplay.textContent = score;
+                finalDifficultyEl.textContent = difficulty;
+                gameOverModal.classList.add('active');
+                FeedbackModule.show(`游戏结束！得分${score}分`);
+            }
+            function stopGame() {
+                if (isPlaying) {
+                    endGame();
+                }
+            }
+            return {
+                startGame: startGame,
+                stopGame: stopGame
+            };
+        })();
+        // 设置模块（保留原有功能+新增赞助名单）
+        const SettingsModule = (function() {
+            // 原有变量
+            const settingsModal = document.getElementById('settingsModal');
+            const themeToggle = document.getElementById('themeToggle');
+            const feedbackToggle = document.getElementById('feedbackToggle');
+            // 新增：赞助名单弹窗变量
+            const sponsorModal = document.getElementById('sponsorModal');
+            
+            // 原有初始化方法
+            function init() {
+                const isLightTheme = localStorage.getItem('lightTheme') === 'true';
+                document.body.classList.toggle('light-theme', isLightTheme);
+                themeToggle.checked = isLightTheme;
+                
+                themeToggle.addEventListener('change', toggleTheme);
+                feedbackToggle.addEventListener('change', toggleFeedback);
+            }
+            
+            // 原有打开设置面板方法
+            function showSettings() {
+                settingsModal.classList.add('active');
+            }
+            
+            // 原有关闭设置面板方法
+            function closeSettings() {
+                settingsModal.classList.remove('active');
+            }
+            
+            // 新增：显示赞助名单
+            function showSponsorList() {
+                settingsModal.classList.remove('active');
+                sponsorModal.classList.add('active');
+                FeedbackModule.show('已打开赞助名单');
+            }
+            
+            // 新增：关闭赞助名单
+            function closeSponsorList() {
+                sponsorModal.classList.remove('active');
+                showSettings(); // 关闭后返回设置面板
+            }
+            
+            // 原有主题切换方法
+            function toggleTheme() {
+                const isLight = themeToggle.checked;
+                document.body.classList.toggle('light-theme', isLight);
+                localStorage.setItem('lightTheme', isLight);
+                FeedbackModule.show(isLight ? '已切换到浅色的' : '已切换到深色的');
+            }
+            
+            // 原有反馈提示开关方法
+            function toggleFeedback() {
+                FeedbackModule.toggle(feedbackToggle.checked);
+                FeedbackModule.show(feedbackToggle.checked ? '已开启乱七八糟的东西' : '已关闭乱七八糟的东西');
+            }
+            
+            // 原有数据重置方法
+            function resetData() {
+                if (confirm('确定要忘掉所以东西吗（清空所有数据）')) {
+                    CountModule.resetCount();
+                    RankingModule.clearAllRanking();
+                    localStorage.clear();
+                    init();
+                    FeedbackModule.show('所有数据已重置');
+                }
+            }
+            
+            // 暴露所有方法（原有+新增）
+            return {
+                init,
+                showSettings,
+                closeSettings,
+                resetData,
+                toggleTheme,
+                toggleFeedback,
+                showSponsorList,
+                closeSponsorList
+            };
+        })();
+    </script>
+</body>
+</html>
